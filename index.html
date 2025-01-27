@@ -84,6 +84,15 @@
       font-size: 14px;
     }
 
+    /* Estilo para el mensaje de no ofertas */
+    .no-offers {
+      text-align: center;
+      font-size: 18px;
+      color: #3A6B8C;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
   </style>
 </head>
 <body>
@@ -95,6 +104,9 @@
   <div class="container">
     <div class="offer-container" id="offer-container">
       <!-- Aquí se cargarán las ofertas dinámicamente -->
+    </div>
+    <div class="no-offers" id="no-offers" style="display: none;">
+      No hi ha cap oferta de subproducte a la comarca.
     </div>
   </div>
 
@@ -118,36 +130,45 @@
           
           const items = xmlDoc.getElementsByTagName('item');
           const container = document.getElementById('offer-container');
+          const noOffersMessage = document.getElementById('no-offers');
           container.innerHTML = ''; // Limpiar contenedor antes de agregar nuevos ítems
 
-          Array.from(items).forEach(item => {
-            const title = item.getElementsByTagName('title')[0].textContent;
-            const description = item.getElementsByTagName('description')[0].textContent;
-            const link = item.getElementsByTagName('guid')[0].textContent;
+          if (items.length === 0) {
+            // Si no hay ítems, mostrar el mensaje de no ofertas
+            noOffersMessage.style.display = 'block';
+          } else {
+            // Si hay ítems, ocultar el mensaje de no ofertas
+            noOffersMessage.style.display = 'none';
 
-            // Separar la descripción por las palabras clave
-            const descriptionParts = description.split(/(?=\bPreu|\bLocalitat|\bMaterial|\bTipologia|\bPes|\bUnitat)/);
-            let formattedDescription = descriptionParts.map(part => {
-              // Añadir un salto de línea solo después de las palabras clave y sus valores
-              if (/Preu/.test(part)) {
-                // Añadir €/Kg. al precio
-                return `<p><strong>${part.trim()} €/Kg.</strong></p>`;
-              } else if (/Localitat|Material|Tipologia|Pes|Unitat/.test(part)) {
-                return `<p><strong>${part.trim()}</strong></p>`; // Poner la palabra clave en negrita
-              } else {
-                return `<p>${part.trim()}</p>`;
-              }
-            }).join('');
+            Array.from(items).forEach(item => {
+              const title = item.getElementsByTagName('title')[0].textContent;
+              const description = item.getElementsByTagName('description')[0].textContent;
+              const link = item.getElementsByTagName('guid')[0].textContent;
 
-            const offerDiv = document.createElement('div');
-            offerDiv.classList.add('offer-item');
-            offerDiv.innerHTML = `
-              <h3>${title}</h3>
-              ${formattedDescription}
-              <a href="${link}" target="_blank">Accedir a l'oferta</a>
-            `;
-            container.appendChild(offerDiv);
-          });
+              // Separar la descripción por las palabras clave
+              const descriptionParts = description.split(/(?=\bPreu|\bLocalitat|\bMaterial|\bTipologia|\bPes|\bUnitat)/);
+              let formattedDescription = descriptionParts.map(part => {
+                // Añadir un salto de línea solo después de las palabras clave y sus valores
+                if (/Preu/.test(part)) {
+                  // Añadir €/Kg. al precio
+                  return `<p><strong>${part.trim()} €/Kg.</strong></p>`;
+                } else if (/Localitat|Material|Tipologia|Pes|Unitat/.test(part)) {
+                  return `<p><strong>${part.trim()}</strong></p>`; // Poner la palabra clave en negrita
+                } else {
+                  return `<p>${part.trim()}</p>`;
+                }
+              }).join('');
+
+              const offerDiv = document.createElement('div');
+              offerDiv.classList.add('offer-item');
+              offerDiv.innerHTML = `
+                <h3>${title}</h3>
+                ${formattedDescription}
+                <a href="${link}" target="_blank">Accedir a l'oferta</a>
+              `;
+              container.appendChild(offerDiv);
+            });
+          }
         })
         .catch(error => {
           document.getElementById('offer-container').textContent = 'Error en carregar les ofertes: ' + error;
