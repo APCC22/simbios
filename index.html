@@ -2,7 +2,7 @@
   // Esta función se ejecutará automáticamente al cargar la página
   window.onload = function() {
     const corsProxy = 'https://api.allorigins.win/get?url=';
-    const rssUrl = encodeURIComponent('https://www.simbiosiindustrial.cat/ofertes/exportXml2.php?coord=41.381788636,1.688750543&distance=18.5&tipologia');
+    const rssUrl = encodeURIComponent('https://www.simbiosiindustrial.cat/ofertes/exportXml2.php?coord=41.381788636,1.688750543&distance=80&tipologia');
     const fullUrl = corsProxy + rssUrl;
 
     fetch(fullUrl)
