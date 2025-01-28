@@ -16,9 +16,37 @@
     header {
       background-color: #3A6B8C;
       color: #fff;
-      text-align: center;
-      padding: 20px;
-      font-size: 20px;
+      display: flex;
+      justify-content: space-between; /* Alinea el contingut a la dreta i esquerra */
+      align-items: center; /* Centra verticalment */
+      padding: 10px 0;
+      width: 80%;
+      margin: 0 auto;
+    }
+
+    header h2 {
+      margin: 0;
+      font-size: 22px;
+      text-align: center; /* Centra el text */
+      flex-grow: 1; /* Fa que el títol ocupi tot l'espai disponible */
+    }
+
+    header .btn-zone {
+      background-color: #f5f7fd;
+      color: #3A6B8C;
+      padding: 5px 10px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 14px;
+      border: 1px solid #3A6B8C;
+      opacity: 0.8;
+      transition: opacity 0.3s ease;
+    }
+
+    header .btn-zone:hover {
+      background-color: #3A6B8C;
+      color: #fff;
+      opacity: 1;
     }
 
     .container {
@@ -84,7 +112,6 @@
       font-size: 14px;
     }
 
-    /* Estilo para el mensaje de no ofertas */
     .no-offers {
       text-align: center;
       font-size: 18px;
@@ -92,17 +119,19 @@
       margin-top: 20px;
       font-weight: bold;
     }
+
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Ofertes de residus/subproductes</h1>
+    <h2>Ofertes de residus / subproductes</h2>
+    <a href="https://github.com/APCC22/simbios/blob/3bc5f2ee71fb868f0d3e75fe9de0ad5349077e3b/Proyecto%20nuevo%20(76).png?raw=true" class="btn-zone" target="_blank">Veure la zona d'influència</a>
   </header>
 
   <div class="container">
     <div class="offer-container" id="offer-container">
-      <!-- Aquí se cargarán las ofertas dinámicamente -->
+      <!-- Aquí es carregaran les ofertes dinàmicament -->
     </div>
     <div class="no-offers" id="no-offers" style="display: none;">
       No hi ha cap oferta de residus/subproductes a la comarca.
@@ -114,10 +143,9 @@
   </footer>
 
   <script>
-    // Esta función se ejecutará automáticamente al cargar la página
     window.onload = function() {
       const corsProxy = 'https://api.allorigins.win/get?url=';
-      const rssUrl = encodeURIComponent('https://www.simbiosiindustrial.cat/ofertes/exportXml2.php?coord=41.381788636,1.688750543&distance=60&tipologia');
+      const rssUrl = encodeURIComponent('https://www.simbiosiindustrial.cat/ofertes/exportXml2.php?coord=41.381788636,1.688750543&distance=18.5&tipologia');
       const fullUrl = corsProxy + rssUrl;
 
       fetch(fullUrl)
@@ -130,7 +158,7 @@
           const items = xmlDoc.getElementsByTagName('item');
           const container = document.getElementById('offer-container');
           const noOffersMessage = document.getElementById('no-offers');
-          container.innerHTML = ''; // Limpiar contenedor antes de agregar nuevos ítems
+          container.innerHTML = ''; // Limpia el contenedor antes de agregar nuevos ítems
 
           if (items.length === 0) {
             // Si no hay ítems, mostrar el mensaje de no ofertas
@@ -148,15 +176,17 @@
               const localitatMatch = description.match(/Localitat:\s*([^<\n]+)/);
               const localitat = localitatMatch ? localitatMatch[1].trim() : '';
 
-              // Separar la descripción por las palabras clave
+              // Asegurarnos de que siempre aparezca el "Preu: --"
+              const preuMatch = description.match(/Preu:\s*([^<\n]+)/);
+              const preu = preuMatch ? preuMatch[1].trim() : '--'; // Si no hay precio, poner "--"
+
+              // Separar la descripció
               const descriptionParts = description.split(/(?=\bPreu|\bLocalitat|\bMaterial|\bTipologia|\bPes|\bUnitat)/);
               let formattedDescription = descriptionParts.map(part => {
-                // Añadir un salto de línea solo después de las palabras clave y sus valores
                 if (/Preu/.test(part)) {
-                  // Añadir €/Kg. al precio
-                  return `<p><strong>${part.trim()} €/Kg.</strong></p>`;
+                  return `<p><strong>Preu: ${preu} €/Kg.</strong></p>`;
                 } else if (/Localitat|Material|Tipologia|Pes|Unitat/.test(part)) {
-                  return `<p><strong>${part.trim()}</strong></p>`; // Poner la palabra clave en negrita
+                  return `<p><strong>${part.trim()}</strong></p>`;
                 } else {
                   return `<p>${part.trim()}</p>`;
                 }
