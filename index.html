@@ -98,7 +98,7 @@
 <body>
 
   <header>
-    <h1>Ofertes de Subproductes Industrials</h1>
+    <h1>Ofertes de residus/subproductes</h1>
   </header>
 
   <div class="container">
@@ -106,7 +106,7 @@
       <!-- Aquí se cargarán las ofertas dinámicamente -->
     </div>
     <div class="no-offers" id="no-offers" style="display: none;">
-      No hi ha cap oferta de subproducte a la comarca.
+      No hi ha cap oferta de residus/subproductes a la comarca.
     </div>
   </div>
 
@@ -118,7 +118,7 @@
     // Esta función se ejecutará automáticamente al cargar la página
     window.onload = function() {
       const corsProxy = 'https://api.allorigins.win/get?url=';
-      const rssUrl = encodeURIComponent('https://www.simbiosiindustrial.cat/ofertes/exportXml2.php?coord=41.381788636,1.688750543&distance=18.5&tipologia=Subproducte');
+      const rssUrl = encodeURIComponent('https://www.simbiosiindustrial.cat/ofertes/exportXml2.php?coord=41.381788636,1.688750543&distance=18.5&tipologia');
       const fullUrl = corsProxy + rssUrl;
 
       fetch(fullUrl)
