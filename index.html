@@ -1,73 +1,191 @@
-<script>
-  // Esta función se ejecutará automáticamente al cargar la página
-  window.onload = function() {
-    const corsProxy = 'https://api.allorigins.win/get?url=';
-    const rssUrl = encodeURIComponent('https://www.simbiosiindustrial.cat/ofertes/exportXml2.php?coord=41.381788636,1.688750543&distance=80&tipologia');
-    const fullUrl = corsProxy + rssUrl;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ofertas de Subproductos</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f5f7fd;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
 
-    fetch(fullUrl)
-      .then(response => response.json())
-      .then(data => {
-        const xmlText = data.contents;
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'application/xml');
-        
-        const items = xmlDoc.getElementsByTagName('item');
-        const container = document.getElementById('offer-container');
-        const noOffersMessage = document.getElementById('no-offers');
-        container.innerHTML = ''; // Limpiar contenedor antes de agregar nuevos ítems
+    header {
+      background-color: #3A6B8C;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      font-size: 20px;
+    }
 
-        if (items.length === 0) {
-          // Si no hay ítems, mostrar el mensaje de no ofertas
-          noOffersMessage.style.display = 'block';
-        } else {
-          // Si hay ítems, ocultar el mensaje de no ofertas
-          noOffersMessage.style.display = 'none';
+    .container {
+      width: 80%;
+      margin: 30px auto;
+    }
 
-          const offers = Array.from(items).map(item => {
-            const title = item.getElementsByTagName('title')[0].textContent;
-            const description = item.getElementsByTagName('description')[0].textContent;
-            const link = item.getElementsByTagName('guid')[0].textContent;
-            
-            // Extraer la localitat de la descripció
-            const localitatMatch = description.match(/Localitat:\s*([^<\n]+)/);
-            const localitat = localitatMatch ? localitatMatch[1].trim() : '';
+    .offer-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      justify-items: center;
+    }
 
-            // Separar la descripción por las palabras clave
-            const descriptionParts = description.split(/(?=\bPreu|\bLocalitat|\bMaterial|\bTipologia|\bPes|\bUnitat)/);
-            let formattedDescription = descriptionParts.map(part => {
-              // Añadir un salto de línea solo después de las palabras clave y sus valores
-              if (/Preu/.test(part)) {
-                // Añadir €/Kg. al precio
-                return `<p><strong>${part.trim()} €/Kg.</strong></p>`;
-              } else if (/Localitat|Material|Tipologia|Pes|Unitat/.test(part)) {
-                return `<p><strong>${part.trim()}</strong></p>`; // Poner la palabra clave en negrita
-              } else {
-                return `<p>${part.trim()}</p>`;
-              }
-            }).join('');
+    .offer-item {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+      width: 100%;
+      max-width: 350px;
+    }
 
-            return { title, formattedDescription, link, localitat };
-          });
+    .offer-item:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
 
-          // Ordenar les ofertes per localitat
-          offers.sort((a, b) => a.localitat.localeCompare(b.localitat));
+    .offer-item h3 {
+      color: #3A6B8C;
+      font-size: 20px;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
 
-          // Mostrar les ofertes ordenades
-          offers.forEach(offer => {
-            const offerDiv = document.createElement('div');
-            offerDiv.classList.add('offer-item');
-            offerDiv.innerHTML = `
-              <h3>${offer.title}</h3>
-              ${offer.formattedDescription}
-              <a href="${offer.link}" target="_blank">Accedir a l'oferta</a>
-            `;
-            container.appendChild(offerDiv);
-          });
-        }
-      })
-      .catch(error => {
-        document.getElementById('offer-container').textContent = 'Error en carregar les ofertes: ' + error;
-      });
-  };
-</script>
+    .offer-item p {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #555;
+    }
+
+    .offer-item a {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 15px;
+      background-color: #3A6B8C;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .offer-item a:hover {
+      background-color: #1c6e8c;
+    }
+
+    footer {
+      background-color: #3A6B8C;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    /* Estilo para el mensaje de no ofertas */
+    .no-offers {
+      text-align: center;
+      font-size: 18px;
+      color: #3A6B8C;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Ofertes de residus/subproductes</h1>
+  </header>
+
+  <div class="container">
+    <div class="offer-container" id="offer-container">
+      <!-- Aquí se cargarán las ofertas dinámicamente -->
+    </div>
+    <div class="no-offers" id="no-offers" style="display: none;">
+      No hi ha cap oferta de residus/subproductes a la comarca.
+    </div>
+  </div>
+
+  <footer>
+    <p></p>
+  </footer>
+
+  <script>
+    // Esta función se ejecutará automáticamente al cargar la página
+    window.onload = function() {
+      const corsProxy = 'https://api.allorigins.win/get?url=';
+      const rssUrl = encodeURIComponent('https://www.simbiosiindustrial.cat/ofertes/exportXml2.php?coord=41.381788636,1.688750543&distance=80&tipologia');
+      const fullUrl = corsProxy + rssUrl;
+
+      fetch(fullUrl)
+        .then(response => response.json())
+        .then(data => {
+          const xmlText = data.contents;
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(xmlText, 'application/xml');
+          
+          const items = xmlDoc.getElementsByTagName('item');
+          const container = document.getElementById('offer-container');
+          const noOffersMessage = document.getElementById('no-offers');
+          container.innerHTML = ''; // Limpiar contenedor antes de agregar nuevos ítems
+
+          if (items.length === 0) {
+            // Si no hay ítems, mostrar el mensaje de no ofertas
+            noOffersMessage.style.display = 'block';
+          } else {
+            // Si hay ítems, ocultar el mensaje de no ofertas
+            noOffersMessage.style.display = 'none';
+
+            const offers = Array.from(items).map(item => {
+              const title = item.getElementsByTagName('title')[0].textContent;
+              const description = item.getElementsByTagName('description')[0].textContent;
+              const link = item.getElementsByTagName('guid')[0].textContent;
+              
+              // Extraer la localitat de la descripció
+              const localitatMatch = description.match(/Localitat:\s*([^<\n]+)/);
+              const localitat = localitatMatch ? localitatMatch[1].trim() : '';
+
+              // Separar la descripción por las palabras clave
+              const descriptionParts = description.split(/(?=\bPreu|\bLocalitat|\bMaterial|\bTipologia|\bPes|\bUnitat)/);
+              let formattedDescription = descriptionParts.map(part => {
+                // Añadir un salto de línea solo después de las palabras clave y sus valores
+                if (/Preu/.test(part)) {
+                  // Añadir €/Kg. al precio
+                  return `<p><strong>${part.trim()} €/Kg.</strong></p>`;
+                } else if (/Localitat|Material|Tipologia|Pes|Unitat/.test(part)) {
+                  return `<p><strong>${part.trim()}</strong></p>`; // Poner la palabra clave en negrita
+                } else {
+                  return `<p>${part.trim()}</p>`;
+                }
+              }).join('');
+
+              return { title, formattedDescription, link, localitat };
+            });
+
+            // Ordenar les ofertes per localitat
+            offers.sort((a, b) => a.localitat.localeCompare(b.localitat));
+
+            // Mostrar les ofertes ordenades
+            offers.forEach(offer => {
+              const offerDiv = document.createElement('div');
+              offerDiv.classList.add('offer-item');
+              offerDiv.innerHTML = `
+                <h3>${offer.title}</h3>
+                ${offer.formattedDescription}
+                <a href="${offer.link}" target="_blank">Accedir a l'oferta</a>
+              `;
+              container.appendChild(offerDiv);
+            });
+          }
+        })
+        .catch(error => {
+          document.getElementById('offer-container').textContent = 'Error en carregar les ofertes: ' + error;
+        });
+    };
+  </script>
+
+</body>
+</html>
